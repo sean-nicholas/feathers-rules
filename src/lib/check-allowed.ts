@@ -17,32 +17,16 @@ export const defaultConfig: ICheckAllowedConfig = {
 
 export function checkAllowed(config: ICheckAllowedConfig = defaultConfig) {
   return (params: Params) => {
-    if (params.allowed === true) {
-      return
-    }
-
-    if (!params.provider) {
-      return
-    }
+    if (params.allowed === true) return
+    if (!params.provider) return
 
     let errorDetails = ''
-
-    if (params.name) {
-      errorDetails += ` service: ${params.name}`
-    }
-
-    if (params.method) {
-      errorDetails += ` method: ${params.method}`
-    }
-
-    if (params.id) {
-      errorDetails += ` id: ${params.id}`
-    }
+    if (params.name) errorDetails += ` service: ${params.name}`
+    if (params.method) errorDetails += ` method: ${params.method}`
+    if (params.id) errorDetails += ` id: ${params.id}`
 
     if (params.data) {
-      const data = {
-        ...params.data,
-      }
+      const data = { ...params.data }
 
       for (const protectedField of config.protectedFields) {
         if (_.get(data, protectedField)) {
