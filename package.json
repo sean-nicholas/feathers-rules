@@ -1,0 +1,45 @@
+{
+  "name": "feathers-rules",
+  "version": "0.0.1",
+  "description": "Use firestore like rules in feathers to secure your services",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "is-ci \"test-coverage\" \"test-watch\"",
+    "test-coverage": "jest --coverage",
+    "test-watch": "jest --watch",
+    "test-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch",
+    "start": "ts-node src/index.ts",
+    "build": "rm -rf ./dist && tsc",
+    "debug": "npm run build && node --inspect --debug-brk dist/index.js",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.+(ts|js|json|css|html|md)\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "CI=1 npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "keywords": [
+    "feathers.js",
+    "firestore",
+    "rules"
+  ],
+  "author": "sean-nicholas",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "@types/node": "^12.7.5",
+    "is-ci-cli": "^1.1.1",
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8.4.1",
+    "tslint": "^5.20.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.6.3"
+  }
+}
