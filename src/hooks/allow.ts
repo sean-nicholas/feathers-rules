@@ -2,7 +2,7 @@ import { HookContext } from '@feathersjs/feathers'
 
 export type AllowFunction = (context: HookContext<any>) => boolean | Promise<boolean>
 
-export interface IRules {
+export interface Rules {
   read?: AllowFunction
   write?: AllowFunction
   all?: AllowFunction
@@ -29,7 +29,7 @@ function singleLetterRuleNames(names: string, method: string) {
   return matchingMethods.includes(method)
 }
 
-export const allow = (allowFuncs: IRules) => {
+export const allow = (allowFuncs: Rules) => {
   const func = async (context: HookContext<any>) => {
     // If it was an internal call then skip this hook
     if (!context.params.provider) {
