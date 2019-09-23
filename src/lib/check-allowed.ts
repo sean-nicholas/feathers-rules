@@ -2,7 +2,7 @@ import { Forbidden } from '@feathersjs/errors'
 import { Params } from '@feathersjs/feathers'
 import * as _ from 'lodash'
 
-export interface ICheckAllowedConfig {
+export interface ICheckAllowedOptions {
   /**
    * Lodash _.get format supported. Example: user.details.password
    */
@@ -10,12 +10,12 @@ export interface ICheckAllowedConfig {
   protectWord: string
 }
 
-export const defaultConfig: ICheckAllowedConfig = {
+export const defaultOptions: ICheckAllowedOptions = {
   protectWord: '[HIDDEN]',
   protectedFields: ['password', 'newPassword', 'oldPassword'],
 }
 
-export function checkAllowed(config: ICheckAllowedConfig = defaultConfig) {
+export function checkAllowed(options: ICheckAllowedOptions = defaultOptions) {
   return (params: Params) => {
     if (params.allowed === true) return
     if (!params.provider) return
@@ -28,9 +28,9 @@ export function checkAllowed(config: ICheckAllowedConfig = defaultConfig) {
     if (params.data) {
       const data = { ...params.data }
 
-      for (const protectedField of config.protectedFields) {
+      for (const protectedField of options.protectedFields) {
         if (_.get(data, protectedField)) {
-          _.set(data, protectedField, config.protectWord)
+          _.set(data, protectedField, options.protectWord)
         }
       }
 
