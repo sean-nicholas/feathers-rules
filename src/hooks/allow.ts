@@ -43,22 +43,11 @@ export const allow = (allowFuncs: IRules) => {
 
     const filteredFuncs = Object.entries(allowFuncs)
       .filter(([ruleName]) => {
-        if (context.method === ruleName) {
-          return true
-        }
-        if (ruleName === 'read' && ['find', 'get'].includes(context.method)) {
-          return true
-        }
-        if (ruleName === 'write' && ['create', 'update', 'patch', 'remove'].includes(context.method)) {
-          return true
-        }
-
-        if (ruleName === 'all') {
-          return true
-        }
-        if (singleLetterRuleNames(ruleName, context.method) === true) {
-          return true
-        }
+        if (context.method === ruleName) return true
+        if (ruleName === 'read' && ['find', 'get'].includes(context.method)) return true
+        if (ruleName === 'write' && ['create', 'update', 'patch', 'remove'].includes(context.method)) return true
+        if (ruleName === 'all') return true
+        if (singleLetterRuleNames(ruleName, context.method) === true) return true
         return false
       })
       .map(([ruleName, allowFunc]) => allowFunc as AllowFunction)
