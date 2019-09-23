@@ -32,6 +32,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^24.0.18",
+    "@types/lodash": "^4.14.139",
     "@types/node": "^12.7.5",
     "is-ci-cli": "^1.1.1",
     "jest": "^24.9.0",
@@ -43,6 +44,8 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
-    "@feathersjs/feathers": "^4.3.3"
+    "@feathersjs/errors": "^4.3.3",
+    "@feathersjs/feathers": "^4.3.3",
+    "lodash": "^4.17.15"
   }
 }
