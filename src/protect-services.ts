@@ -1,8 +1,8 @@
 import { Application } from '@feathersjs/feathers'
 import { checkAllowed } from './lib/check-allowed'
-import { Augmenter, AugmenterOptions } from './lib/augmenter'
+import { ServiceAugmenter, ServiceAugmenterOptions } from './lib/service-augmenter'
 
-export interface ProtectServicesOptions extends AugmenterOptions {
+export interface ProtectServicesOptions extends ServiceAugmenterOptions {
   omitServices: string[]
 }
 
@@ -31,7 +31,7 @@ export function protectServices(options: ProtectServicesOptions) {
     app.mixins.push((service, path) => {
       if (opts.omitServices.includes(path)) return
 
-      const augmenter = new Augmenter(opts, service)
+      const augmenter = new ServiceAugmenter(opts, service)
       augmenter.augmentService()
     })
   }

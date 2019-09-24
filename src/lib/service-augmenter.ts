@@ -1,16 +1,16 @@
 import { Service } from '@feathersjs/feathers'
 import { CheckAllowedParams, AdditionalCheckAllowedParams } from './check-allowed'
 
-export interface AugmenterOptions {
+export interface ServiceAugmenterOptions {
   checkAllowed: (params: CheckAllowedParams) => void
   paramsExtractors: {
     [methodName: string]: (args: any[]) => AdditionalCheckAllowedParams,
   }
 }
 
-export class Augmenter {
+export class ServiceAugmenter {
   constructor(
-    private options: AugmenterOptions,
+    private options: ServiceAugmenterOptions,
     private service: Service<any>,
   ) { }
 
