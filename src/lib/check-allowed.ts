@@ -15,7 +15,11 @@ export const defaultOptions: CheckAllowedOptions = {
   protectedFields: ['password', 'newPassword', 'oldPassword'],
 }
 
-export function checkAllowed(options: CheckAllowedOptions = defaultOptions) {
+export function checkAllowed(options: CheckAllowedOptions) {
+  const opts = {
+    ...defaultOptions,
+    options,
+  }
   return (params: Params) => {
     if (params.allowed === true) return
     if (!params.provider) return
@@ -28,9 +32,9 @@ export function checkAllowed(options: CheckAllowedOptions = defaultOptions) {
     if (params.data) {
       const data = { ...params.data }
 
-      for (const protectedField of options.protectedFields) {
+      for (const protectedField of opts.protectedFields) {
         if (_.get(data, protectedField)) {
-          _.set(data, protectedField, options.protectWord)
+          _.set(data, protectedField, opts.protectWord)
         }
       }
 
