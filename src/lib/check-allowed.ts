@@ -15,12 +15,22 @@ export const defaultOptions: CheckAllowedOptions = {
   protectedFields: ['password', 'newPassword', 'oldPassword'],
 }
 
-export function checkAllowed(options: CheckAllowedOptions) {
+export interface AdditionalCheckAllowedParams {
+  name?: string
+  method?: string,
+  data?: any
+  id?: string
+}
+
+export type CheckAllowedParams = AdditionalCheckAllowedParams & Params
+
+export function checkAllowed(options?: Partial<CheckAllowedOptions>) {
   const opts = {
     ...defaultOptions,
-    options,
+    ...options,
   }
-  return (params: Params) => {
+
+  return (params: CheckAllowedParams) => {
     if (params.allowed === true) return
     if (!params.provider) return
 
