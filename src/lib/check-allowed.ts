@@ -20,6 +20,7 @@ export interface AdditionalCheckAllowedParams {
   method?: string,
   data?: any
   id?: string
+  allowed?: boolean
 }
 
 export type CheckAllowedParams = AdditionalCheckAllowedParams & Params
