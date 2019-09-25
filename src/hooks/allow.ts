@@ -32,14 +32,10 @@ function singleLetterRuleNames(names: string, method: string) {
 export const allow = (allowFuncs: Rules) => {
   const func = async (context: HookContext<any>) => {
     // If it was an internal call then skip this hook
-    if (!context.params.provider) {
-      return context
-    }
+    if (!context.params.provider) return context
 
     // Was previously allowed --> skip hook
-    if (context.params.allowed) {
-      return context
-    }
+    if (context.params.allowed) return context
 
     const filteredFuncs = Object.entries(allowFuncs)
       .filter(([ruleName]) => {
