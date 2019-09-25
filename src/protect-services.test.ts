@@ -1,17 +1,17 @@
-import feathers, { Application, Params, HookContext } from '@feathersjs/feathers'
+import feathers, { Params, HookContext } from '@feathersjs/feathers'
 import { protectServices } from './protect-services'
 import { MockService } from '../tests/mock-service'
 import { Forbidden } from '@feathersjs/errors'
 import { allow } from './hooks/allow'
 
 describe('protectServices', () => {
-  it('runs the checkAllowed function before a service method is run', () => {
+  it('runs the checkAllowed function before a service method is run', async () => {
     const checkAllowed = jest.fn()
     const app = feathers().configure(protectServices({
       checkAllowed,
     }))
     app.use('/test', new MockService())
-    app.service('test').find()
+    await app.service('test').find()
     expect(checkAllowed).toBeCalledTimes(1)
   })
 
@@ -21,8 +21,8 @@ describe('protectServices', () => {
     const params: Params = {
       provider: 'rest',
     }
-    const doFind = () => app.service('test').find(params)
-    expect(doFind).toThrow(Forbidden)
+    const res = app.service('test').find(params)
+    expect(res).rejects.toBeInstanceOf(Forbidden)
   })
 
   it('rules are run and grant access', () => {
@@ -44,18 +44,19 @@ describe('protectServices', () => {
     const params: Params = {
       provider: 'rest',
     }
-    app.service('test').find(params)
 
-    const doFindWithoutQuery = () => app.service('test').find(params)
-    expect(doFindWithoutQuery).toThrow(Forbidden)
+    const negativeResult = app.service('test').find(params)
+    expect(negativeResult).rejects.toBeInstanceOf(Forbidden)
 
-    const doFindWithQuery = () => service.find({
+    const positiveResult = service.find({
       ...params,
       query: {
         testQuery: 'yes',
       },
     })
-    expect(doFindWithQuery).not.toThrow(Forbidden)
+    expect(positiveResult).resolves.toBe('test-find')
   })
+
+  // TODO: Test if lastHook is always last --> 2x service.hooks
 
 })
