@@ -21,7 +21,7 @@ export const defaultOptions: ProtectServicesOptions = {
   },
 }
 
-export function protectServices(options: ProtectServicesOptions) {
+export function protectServices(options?: Partial<ProtectServicesOptions>) {
   const opts = {
     ...defaultOptions,
     ...options,
