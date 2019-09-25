@@ -1,13 +1,21 @@
-import { Service, HookContext, HooksObject } from '@feathersjs/feathers'
-import { CheckAllowedParams, AdditionalCheckAllowedParams } from './check-allowed'
-import { hooks } from '@feathersjs/commons'
-const { getHooks } = hooks
+import { Service, HookContext, HooksObject, Hook } from '@feathersjs/feathers'
+import { CheckAllowedParams } from './check-allowed'
 import * as _ from 'lodash'
 
 export interface ServiceAugmenterOptions {
-  checkAllowed: (params: CheckAllowedParams) => void
-  paramsExtractors: {
-    [methodName: string]: (args: any[]) => AdditionalCheckAllowedParams,
+  checkAllowed: (params: CheckAllowedParams) => void,
+  methodsToProtect: string[]
+}
+
+type ServiceHooksMethod = (hooks: Partial<HooksObject>) => Service<any>
+
+export function checkAllowedFactory(opts: ServiceAugmenterOptions) {
+  return async (context: HookContext<any>) => {
+    opts.checkAllowed({
+      name: context.service.constructor.name,
+      ...(context as any),
+      ...(context.params as any),
+    })
   }
 }
 
@@ -17,76 +25,50 @@ export class ServiceAugmenter {
     private service: Service<any>,
   ) { }
 
-  private methodsToAugment = Object.keys(this.options.paramsExtractors)
-  private originalHooks: any = null
+  private originalHooks = this.service.hooks.bind(this.service)
+  private hookFunc = checkAllowedFactory(this.options)
 
   public augmentService() {
-    this.originalHooks = this.service.hooks.bind(this.service)
+    this.initiallyAddHook()
+    this.augmentHooksMethod()
+  }
 
-    this.addLastHooks(this.service)
-
+  private augmentHooksMethod() {
     const self = this
-    const augmentedHooks = function augmentedHooks(hooks: Partial<HooksObject>) {
+
+    const hooksMethod = function augmentedHooks(hooks: Partial<HooksObject>) {
       const res = self.originalHooks(hooks)
-      self.removeLastHooks(self.service)
-      self.addLastHooks(self.service)
+      self.addLastHookToLastPosition()
       return res
     }
-    this.service.hooks = augmentedHooks.bind(this.service)
 
-    // for (const methodName of this.methodsToAugment) {
-    //   this.augmentMethod(methodName)
-    // }
+    this.service.hooks = hooksMethod.bind(this.service)
   }
 
-  private removeLastHooks(service: Service<any>) {
-    const currentHooks: any[] = service.__hooks.before
-    const withoutLastHook = _.mapValues(currentHooks, hooks => {
-      return _.without(hooks, this.lastHook)
-    })
-    service.__hooks.before = withoutLastHook
+  private initiallyAddHook() {
+    this.addLastHook()
   }
 
-  private addLastHooks(service: Service<any>) {
+  private addLastHookToLastPosition() {
+    this.removeLastHooks()
+    this.addLastHook()
+  }
+
+  private addLastHook() {
     const hookObject = {
-      before: this.methodsToAugment.reduce((obj, methodName) => ({
+      before: ['find', 'get'].reduce((obj, methodName) => ({
         ...obj,
-        [methodName]: [this.lastHook.bind(this)],
+        [methodName]: [this.hookFunc],
       }), {}),
     }
     this.originalHooks(hookObject)
   }
 
-  private lastHook(context: HookContext<any>) {
-    // TODO: Second argument
-    // this.checkAllowed(context.method, context.params)
-    console.log('lastHook')
-    this.options.checkAllowed({
-      name: this.service.constructor.name,
-      method: context.method,
-      ...context.params,
+  private removeLastHooks() {
+    const currentHooks: any[] = this.service.__hooks.before
+    const withoutLastHook = _.mapValues(currentHooks, hooks => {
+      return _.without(hooks, this.hookFunc)
     })
-  }
-
-  private augmentMethod(methodName: string) {
-    const original = this.service[methodName]
-    this.service[methodName] = (...args: any[]) => {
-      this.checkAllowed(methodName, args)
-      return original.bind(this.service)(...args)
-    }
-  }
-
-  private checkAllowed(methodName: string, args: any[]) {
-    const params = this.extractParams(methodName, args)
-    this.options.checkAllowed({
-      name: this.service.constructor.name,
-      method: methodName,
-      ...params,
-    })
-  }
-
-  private extractParams(methodName: string, args: any[]) {
-    const extractor = this.options.paramsExtractors[methodName]
-    return extractor(args)
+    this.service.__hooks.before = withoutLastHook
   }
 }
