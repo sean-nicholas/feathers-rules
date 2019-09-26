@@ -1,4 +1,4 @@
-import { checkAllowed, CheckAllowedParams } from './check-allowed'
+import { allowedChecker, CheckAllowedParams } from './allowed-checker'
 import { Forbidden } from '@feathersjs/errors'
 
 describe('checkAllowed', () => {
@@ -6,7 +6,7 @@ describe('checkAllowed', () => {
   let check: (params: CheckAllowedParams) => void
 
   beforeEach(() => {
-    check = checkAllowed()
+    check = allowedChecker()
   })
 
   it('does not change params.allowed if an earlier rule already allowed access', () => {
@@ -44,7 +44,7 @@ describe('checkAllowed', () => {
   })
 
   it('does hide additional fields', () => {
-    const checker = checkAllowed({
+    const checker = allowedChecker({
       protectedFields: [
         'secret',
         'deep.field.secret',
@@ -62,7 +62,7 @@ describe('checkAllowed', () => {
   })
 
   it('uses custom word to hide fields', () => {
-    const checker = checkAllowed({
+    const checker = allowedChecker({
       protectWord: 'PSSSST',
     })
 

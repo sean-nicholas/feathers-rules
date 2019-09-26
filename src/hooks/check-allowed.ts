@@ -1,5 +1,5 @@
 import { HookContext } from '@feathersjs/feathers'
-import { CheckAllowedParams } from '../lib/check-allowed'
+import { CheckAllowedParams } from '../lib/allowed-checker'
 
 export interface CheckAllowedHookOptions {
   checkAllowed: (params: CheckAllowedParams) => void,

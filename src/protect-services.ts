@@ -1,5 +1,5 @@
 import { Application, HookContext, Service, HooksObject } from '@feathersjs/feathers'
-import { checkAllowed, CheckAllowedParams } from './lib/check-allowed'
+import { allowedChecker, CheckAllowedParams } from './lib/allowed-checker'
 import * as _ from 'lodash'
 import { checkAllowedHook } from './hooks/check-allowed'
 
@@ -11,7 +11,7 @@ export interface ProtectServicesOptions {
 const METHODS = ['find', 'get', 'create', 'update', 'patch', 'remove']
 
 export const defaultOptions: ProtectServicesOptions = {
-  checkAllowed: checkAllowed(),
+  checkAllowed: allowedChecker(),
   omitServices: [
     'authentication',
   ],

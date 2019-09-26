@@ -25,7 +25,7 @@ export interface AdditionalCheckAllowedParams {
 
 export type CheckAllowedParams = AdditionalCheckAllowedParams & Params
 
-export function checkAllowed(options?: Partial<CheckAllowedOptions>) {
+export function allowedChecker(options?: Partial<CheckAllowedOptions>) {
   const opts = {
     ...defaultOptions,
     ...options,
