@@ -5,15 +5,15 @@ import { Forbidden } from '@feathersjs/errors'
 import { allow } from './hooks/allow'
 
 describe('protectServices', () => {
-  it('runs the checkAllowed function before a service method is run', async () => {
-    const checkAllowed = jest.fn()
+  it('runs the allowedChecker function before a service method is run', async () => {
+    const allowedChecker = jest.fn()
     const app = feathers()
     app.use('/test', new MockService())
     app.configure(protectServices({
-      checkAllowed,
+      allowedChecker: allowedChecker,
     }))
     await app.service('test').find()
-    expect(checkAllowed).toBeCalledTimes(1)
+    expect(allowedChecker).toBeCalledTimes(1)
   })
 
   it('the service method throws if not allowed', () => {

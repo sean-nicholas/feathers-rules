@@ -2,7 +2,7 @@ import { Forbidden } from '@feathersjs/errors'
 import { Params } from '@feathersjs/feathers'
 import * as _ from 'lodash'
 
-export interface CheckAllowedOptions {
+export interface AllowedCheckerOptions {
   /**
    * Lodash _.get format supported. Example: user.details.password
    */
@@ -10,12 +10,12 @@ export interface CheckAllowedOptions {
   protectWord: string
 }
 
-export const defaultOptions: CheckAllowedOptions = {
+export const defaultOptions: AllowedCheckerOptions = {
   protectWord: '[HIDDEN]',
   protectedFields: ['password', 'newPassword', 'oldPassword'],
 }
 
-export interface AdditionalCheckAllowedParams {
+export interface AdditionalAllowedCheckParams {
   name?: string
   method?: string,
   data?: any
@@ -23,15 +23,15 @@ export interface AdditionalCheckAllowedParams {
   allowed?: boolean
 }
 
-export type CheckAllowedParams = AdditionalCheckAllowedParams & Params
+export type AllowedCheckerParams = AdditionalAllowedCheckParams & Params
 
-export function allowedChecker(options?: Partial<CheckAllowedOptions>) {
+export function allowedChecker(options?: Partial<AllowedCheckerOptions>) {
   const opts = {
     ...defaultOptions,
     ...options,
   }
 
-  return (params: CheckAllowedParams) => {
+  return (params: AllowedCheckerParams) => {
     if (params.allowed === true) return
     if (!params.provider) return
 

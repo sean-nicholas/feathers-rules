@@ -1,9 +1,9 @@
-import { allowedChecker, CheckAllowedParams } from './allowed-checker'
+import { allowedChecker, AllowedCheckerParams } from './allowed-checker'
 import { Forbidden } from '@feathersjs/errors'
 
-describe('checkAllowed', () => {
-  const defaultParams: CheckAllowedParams = { provider: 'rest' }
-  let check: (params: CheckAllowedParams) => void
+describe('allowedChecker', () => {
+  const defaultParams: AllowedCheckerParams = { provider: 'rest' }
+  let check: (params: AllowedCheckerParams) => void
 
   beforeEach(() => {
     check = allowedChecker()

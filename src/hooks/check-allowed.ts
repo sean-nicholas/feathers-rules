@@ -1,13 +1,13 @@
 import { HookContext } from '@feathersjs/feathers'
-import { CheckAllowedParams } from '../lib/allowed-checker'
+import { AllowedCheckerParams } from '../lib/allowed-checker'
 
 export interface CheckAllowedHookOptions {
-  checkAllowed: (params: CheckAllowedParams) => void,
+  allowedChecker: (params: AllowedCheckerParams) => void,
 }
 
 export function checkAllowedHook(opts: CheckAllowedHookOptions) {
   return async (context: HookContext<any>) => {
-    opts.checkAllowed({
+    opts.allowedChecker({
       name: context.service.constructor.name,
       ...(context as any),
       ...(context.params as any),
