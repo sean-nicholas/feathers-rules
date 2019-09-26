@@ -1,21 +1,11 @@
 import { Service, HookContext, HooksObject, Hook } from '@feathersjs/feathers'
 import { CheckAllowedParams } from './check-allowed'
 import * as _ from 'lodash'
+import { checkAllowedHook } from '../hooks/check-allowed'
 
 export interface ServiceAugmenterOptions {
   checkAllowed: (params: CheckAllowedParams) => void,
   methodsToProtect: string[]
-}
-
-// TODO: Put in own file in src/hooks
-export function checkAllowedFactory(opts: ServiceAugmenterOptions) {
-  return async (context: HookContext<any>) => {
-    opts.checkAllowed({
-      name: context.service.constructor.name,
-      ...(context as any),
-      ...(context.params as any),
-    })
-  }
 }
 
 export class ServiceAugmenter {
@@ -25,7 +15,7 @@ export class ServiceAugmenter {
   ) { }
 
   private originalHooks = this.service.hooks.bind(this.service)
-  private hookFunc = checkAllowedFactory(this.options)
+  private hookFunc = checkAllowedHook(this.options)
 
   public augmentService() {
     this.initiallyAddHook()
