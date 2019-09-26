@@ -53,7 +53,7 @@ export class ServiceAugmenter {
 
   private addLastHook() {
     const hookObject = {
-      before: ['find', 'get'].reduce((obj, methodName) => ({
+      before: this.options.methodsToProtect.reduce((obj, methodName) => ({
         ...obj,
         [methodName]: [this.hookFunc],
       }), {}),

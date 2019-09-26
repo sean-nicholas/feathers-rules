@@ -21,8 +21,26 @@ describe('protectServices', () => {
     const params: Params = {
       provider: 'rest',
     }
-    const res = app.service('test').find(params)
-    expect(res).rejects.toBeInstanceOf(Forbidden)
+
+    const service = app.service('test')
+
+    const findRes = service.find(params)
+    expect(findRes).rejects.toBeInstanceOf(Forbidden)
+
+    const getRes = service.get(null, params)
+    expect(getRes).rejects.toBeInstanceOf(Forbidden)
+
+    const createRes = service.create({}, params)
+    expect(createRes).rejects.toBeInstanceOf(Forbidden)
+
+    const updateRes = service.update(null, {}, params)
+    expect(updateRes).rejects.toBeInstanceOf(Forbidden)
+
+    const patchRes = service.patch(null, {}, params)
+    expect(patchRes).rejects.toBeInstanceOf(Forbidden)
+
+    const removeRes = service.remove(null, params)
+    expect(removeRes).rejects.toBeInstanceOf(Forbidden)
   })
 
   it('rules are run and grant access', () => {
@@ -58,5 +76,5 @@ describe('protectServices', () => {
   })
 
   // TODO: Test if lastHook is always last --> 2x service.hooks
-
+  // TODO: Test custom method
 })
