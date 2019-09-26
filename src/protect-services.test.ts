@@ -7,17 +7,19 @@ import { allow } from './hooks/allow'
 describe('protectServices', () => {
   it('runs the checkAllowed function before a service method is run', async () => {
     const checkAllowed = jest.fn()
-    const app = feathers().configure(protectServices({
+    const app = feathers()
+    app.use('/test', new MockService())
+    app.configure(protectServices({
       checkAllowed,
     }))
-    app.use('/test', new MockService())
     await app.service('test').find()
     expect(checkAllowed).toBeCalledTimes(1)
   })
 
   it('the service method throws if not allowed', () => {
-    const app = feathers().configure(protectServices())
+    const app = feathers()
     app.use('/test', new MockService())
+    app.configure(protectServices())
     const params: Params = {
       provider: 'rest',
     }
@@ -44,7 +46,7 @@ describe('protectServices', () => {
   })
 
   it('rules are run and grant access', () => {
-    const app = feathers().configure(protectServices())
+    const app = feathers()
     app.use('/test', new MockService())
     const service = app.service('test')
     service.hooks({
@@ -58,6 +60,7 @@ describe('protectServices', () => {
         ],
       },
     })
+    app.configure(protectServices())
 
     const params: Params = {
       provider: 'rest',
@@ -74,7 +77,4 @@ describe('protectServices', () => {
     })
     expect(positiveResult).resolves.toBe('test-find')
   })
-
-  // TODO: Test if lastHook is always last --> 2x service.hooks
-  // TODO: Test custom method
 })

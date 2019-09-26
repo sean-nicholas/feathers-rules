@@ -6,6 +6,5 @@ export class MockService {
   public async update(...args: any[]) { return `${this.internal}-update` }
   public async patch(...args: any[]) { return `${this.internal}-patch` }
   public async remove(...args: any[]) { return `${this.internal}-remove` }
-  public async custom(...args: any[]) { return `${this.internal}-custom` }
   public setup(app: any, path: string) { }
 }

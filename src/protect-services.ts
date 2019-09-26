@@ -1,18 +1,31 @@
 import { Application, HookContext, Service, HooksObject } from '@feathersjs/feathers'
-import { checkAllowed } from './lib/check-allowed'
-import { ServiceAugmenter, ServiceAugmenterOptions } from './lib/service-augmenter'
+import { checkAllowed, CheckAllowedParams } from './lib/check-allowed'
 import * as _ from 'lodash'
+import { checkAllowedHook } from './hooks/check-allowed'
 
-export interface ProtectServicesOptions extends ServiceAugmenterOptions {
+export interface ProtectServicesOptions {
+  checkAllowed: (params: CheckAllowedParams) => void,
   omitServices: string[]
 }
+
+const METHODS = ['find', 'get', 'create', 'update', 'patch', 'remove']
 
 export const defaultOptions: ProtectServicesOptions = {
   checkAllowed: checkAllowed(),
   omitServices: [
     'authentication',
   ],
-  methodsToProtect: ['find', 'get', 'create', 'update', 'patch', 'remove'],
+}
+
+function addHooks(service: Service<any>, opts: ProtectServicesOptions) {
+  service.hooks({
+    before: {
+      ...METHODS.reduce((obj: any, methodName: string) => ({
+        ...obj,
+        [methodName]: [checkAllowedHook(opts)],
+      }), {}),
+    },
+  })
 }
 
 export function protectServices(options?: Partial<ProtectServicesOptions>) {
@@ -22,11 +35,10 @@ export function protectServices(options?: Partial<ProtectServicesOptions>) {
   }
 
   return (app: Application) => {
-    app.mixins.push((service, path) => {
-      if (opts.omitServices.includes(path)) return
-
-      const augmenter = new ServiceAugmenter(opts, service)
-      augmenter.augmentService()
-    })
+    for (const serviceName of Object.keys(app.services)) {
+      if (opts.omitServices.includes(serviceName)) continue
+      const service = app.service(serviceName)
+      addHooks(service, opts)
+    }
   }
 }
