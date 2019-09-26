@@ -33,13 +33,13 @@ export class ServiceAugmenter {
   }
 
   private augmentHooksMethod() {
-    const hooksMethod = (hooks: Partial<HooksObject>) => {
+    const newHooksMethod = (hooks: Partial<HooksObject>) => {
       const res = this.originalHooks(hooks)
       this.addLastHookToLastPosition()
       return res
     }
 
-    this.service.hooks = hooksMethod
+    this.service.hooks = newHooksMethod
   }
 
   private initiallyAddHook() {
