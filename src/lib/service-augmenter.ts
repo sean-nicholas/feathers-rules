@@ -7,8 +7,7 @@ export interface ServiceAugmenterOptions {
   methodsToProtect: string[]
 }
 
-type ServiceHooksMethod = (hooks: Partial<HooksObject>) => Service<any>
-
+// TODO: Put in own file in src/hooks
 export function checkAllowedFactory(opts: ServiceAugmenterOptions) {
   return async (context: HookContext<any>) => {
     opts.checkAllowed({
