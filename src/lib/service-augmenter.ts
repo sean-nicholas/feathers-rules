@@ -53,6 +53,8 @@ export class ServiceAugmenter {
 
   private addLastHook() {
     const hookObject = {
+      // TODO: These shouldn't come from options. These should come from the service itself
+      // TODO: Options should only omit methods
       before: this.options.methodsToProtect.reduce((obj, methodName) => ({
         ...obj,
         [methodName]: [this.hookFunc],
