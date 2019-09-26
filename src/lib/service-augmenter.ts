@@ -33,15 +33,13 @@ export class ServiceAugmenter {
   }
 
   private augmentHooksMethod() {
-    const self = this
-
-    const hooksMethod = function augmentedHooks(hooks: Partial<HooksObject>) {
-      const res = self.originalHooks(hooks)
-      self.addLastHookToLastPosition()
+    const hooksMethod = (hooks: Partial<HooksObject>) => {
+      const res = this.originalHooks(hooks)
+      this.addLastHookToLastPosition()
       return res
     }
 
-    this.service.hooks = hooksMethod.bind(this.service)
+    this.service.hooks = hooksMethod
   }
 
   private initiallyAddHook() {
