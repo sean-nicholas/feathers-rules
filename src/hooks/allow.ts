@@ -2,17 +2,18 @@ import { HookContext } from '@feathersjs/feathers'
 
 export type AllowFunction<T = any> = (context: HookContext<T>) => boolean | Promise<boolean>
 
-export interface Rules<T = any> {
-  read?: AllowFunction<T>
-  write?: AllowFunction<T>
-  all?: AllowFunction<T>
-  find?: AllowFunction<T>
-  get?: AllowFunction<T>
-  create?: AllowFunction<T>
-  update?: AllowFunction<T>
-  patch?: AllowFunction<T>
-  remove?: AllowFunction<T>
-}
+export type Rules<T = any> = Partial<{
+  read: AllowFunction<T>
+  write: AllowFunction<T>
+  all: AllowFunction<T>
+  find: AllowFunction<T>
+  get: AllowFunction<T>
+  create: AllowFunction<T>
+  update: AllowFunction<T>
+  patch: AllowFunction<T>
+  remove: AllowFunction<T>
+  [ruleKey: string]: AllowFunction<T>,
+}>
 
 const singleLetterToMethod: { [key: string]: string } = {
   c: 'create',
