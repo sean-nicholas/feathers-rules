@@ -7,8 +7,6 @@ const basicParams = {
 
 const basicRules: Rules = {
   find: context => !!(context.params.query && context.params.query.test === true),
-  get: context => context.id === 'test-id',
-  create: context => !!(context.data && context.data.testData === 'test'),
 }
 
 function simulate(method: string) {
@@ -19,8 +17,6 @@ function simulate(method: string) {
 }
 
 const FIND_QUERY_THAT_IS_ALLOWED = { test: true }
-const GET_ID_THAT_IS_ALLOWED = 'test-id'
-const CREATE_DATA_THAT_IS_ALLOWED = { testData: 'test' }
 
 describe('allow hook', () => {
   describe('does skip rules checking', () => {
@@ -61,36 +57,16 @@ describe('allow hook', () => {
     })
   })
 
-  describe('with get rule', () => {
-    it('does not set params.allow to true if rule does not match', async () => {
-      const { params } = await simulate('get')
-        .withAdditionalContext({ id: 'not-allowed' })
-        .run()
-      expect(params.allowed).toBe(undefined)
-    })
+  it('runs rule with corresponding method name', async () => {
+    const method = 'made-up-method'
+    const rule = jest.fn()
 
-    it('does set params.allow to true if rule matches', async () => {
-      const { params } = await simulate('get')
-        .withAdditionalContext({ id: GET_ID_THAT_IS_ALLOWED })
-        .run()
-      expect(params.allowed).toBe(true)
-    })
-  })
-
-  describe('with create rule', () => {
-    it('does not set params.allow to true if rule does not match', async () => {
-      const { params } = await simulate('create')
-        .withAdditionalContext({ data: { testData: 'not-allowed' } })
-        .run()
-      expect(params.allowed).toBe(undefined)
-    })
-
-    it('does set params.allow to true if rule matches', async () => {
-      const { params } = await simulate('create')
-        .withAdditionalContext({ data: CREATE_DATA_THAT_IS_ALLOWED })
-        .run()
-      expect(params.allowed).toBe(true)
-    })
+    const { params } = await simulate(method)
+      .withRules({
+        [method]: rule,
+      })
+      .run()
+    expect(rule).toBeCalled()
   })
 
 })
