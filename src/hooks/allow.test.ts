@@ -16,9 +16,31 @@ function simulate(method: string) {
   return new AllowHookRequestSimulator(context, params, rules)
 }
 
+async function simulateForAllMethods(rules: Rules) {
+  await simulate('find').withRules(rules).run()
+  await simulate('get').withRules(rules).run()
+  await simulate('create').withRules(rules).run()
+  await simulate('update').withRules(rules).run()
+  await simulate('patch').withRules(rules).run()
+  await simulate('remove').withRules(rules).run()
+}
+
 const FIND_QUERY_THAT_IS_ALLOWED = { test: true }
 
 describe('allow hook', () => {
+  it('runs rule with corresponding method name', async () => {
+    const method = 'made-up-method'
+    const rule = jest.fn()
+
+    await simulate(method)
+      .withRules({
+        [method]: rule,
+      })
+      .run()
+
+    expect(rule).toBeCalled()
+  })
+
   describe('does skip rules checking', () => {
     it('if it is an internal call', async () => {
       const findRule = jest.fn()
@@ -57,42 +79,23 @@ describe('allow hook', () => {
     })
   })
 
-  it('runs rule with corresponding method name', async () => {
-    const method = 'made-up-method'
-    const rule = jest.fn()
-
-    await simulate(method)
-      .withRules({
-        [method]: rule,
-      })
-      .run()
-
-    expect(rule).toBeCalled()
-  })
-
   describe('with single letter rules', () => {
-    it('runs f rule', async () => {
+    it('runs f rule on find but not on get, create, update, patch, remove', async () => {
       const rule = jest.fn()
+      const rules = { f: rule }
 
-      await simulate('find')
-        .withRules({
-          f: rule,
-        })
-        .run()
+      await simulateForAllMethods(rules)
 
-      expect(rule).toBeCalled()
+      expect(rule).toBeCalledTimes(1)
     })
 
-    it('runs rule with multiple single letters in name', async () => {
+    it('runs fgc rule on find, get, create but not on update, patch, remove', async () => {
       const rule = jest.fn()
+      const rules = { fgc: rule }
 
-      await simulate('find')
-        .withRules({
-          fg: rule,
-        })
-        .run()
+      await simulateForAllMethods(rules)
 
-      expect(rule).toBeCalled()
+      expect(rule).toBeCalledTimes(3)
     })
   })
 
@@ -101,14 +104,7 @@ describe('allow hook', () => {
       const rule = jest.fn()
       const rules = { read: rule }
 
-      await simulate('find').withRules(rules).run()
-      await simulate('get').withRules(rules).run()
-
-      // Should not run
-      await simulate('create').withRules(rules).run()
-      await simulate('update').withRules(rules).run()
-      await simulate('patch').withRules(rules).run()
-      await simulate('remove').withRules(rules).run()
+      await simulateForAllMethods(rules)
 
       expect(rule).toBeCalledTimes(2)
     })
@@ -117,16 +113,19 @@ describe('allow hook', () => {
       const rule = jest.fn()
       const rules = { write: rule }
 
-      await simulate('create').withRules(rules).run()
-      await simulate('update').withRules(rules).run()
-      await simulate('patch').withRules(rules).run()
-      await simulate('remove').withRules(rules).run()
-
-      // Should not run
-      await simulate('find').withRules(rules).run()
-      await simulate('get').withRules(rules).run()
+      await simulateForAllMethods(rules)
 
       expect(rule).toBeCalledTimes(4)
+    })
+
+    it('runs all rule on all methods', async () => {
+      const rule = jest.fn()
+      const rules = { all: rule }
+
+      await simulateForAllMethods(rules)
+      await simulate('made-up-method').withRules(rules).run()
+
+      expect(rule).toBeCalledTimes(7)
     })
 
   })
