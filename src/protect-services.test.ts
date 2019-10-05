@@ -1,6 +1,6 @@
 import feathers, { Params, HookContext } from '@feathersjs/feathers'
 import { protectServices } from './protect-services'
-import { MockService } from '../tests/mock-service'
+import { MockService, FIND_RETURN } from '../tests/mock-service'
 import { Forbidden } from '@feathersjs/errors'
 import { allow } from './hooks/allow'
 
@@ -10,7 +10,7 @@ describe('protectServices', () => {
     const app = feathers()
     app.use('/test', new MockService())
     app.configure(protectServices({
-      allowedChecker: allowedChecker,
+      allowedChecker,
     }))
     await app.service('test').find()
     expect(allowedChecker).toBeCalledTimes(1)
@@ -75,6 +75,6 @@ describe('protectServices', () => {
         testQuery: 'yes',
       },
     })
-    expect(positiveResult).resolves.toBe('test-find')
+    expect(positiveResult).resolves.toBe(FIND_RETURN)
   })
 })

@@ -1,6 +1,6 @@
 import feathers, { Params, Service } from '@feathersjs/feathers'
 import { allow, Rules } from './allow'
-import { MockService } from '../../tests/mock-service'
+import { MockService, FIND_RETURN } from '../../tests/mock-service'
 import { protectServices } from '..'
 import { Forbidden } from '@feathersjs/errors'
 
@@ -31,7 +31,7 @@ describe('allow hook', () => {
   it('does skip checking if it is an internal call', () => {
     const { service } = setupApp(allow(basicRules))
     const res = service.find()
-    expect(res).resolves.toBe('test-find')
+    expect(res).resolves.toBe(FIND_RETURN)
   })
 
   it('does throw if it is an external call & rules dont match', () => {
