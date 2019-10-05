@@ -12,7 +12,7 @@ export type Rules<T = any> = Partial<{
   update: AllowFunction<T>
   patch: AllowFunction<T>
   remove: AllowFunction<T>
-  [ruleKey: string]: AllowFunction<T>,
+  [ruleName: string]: AllowFunction<T>,
 }>
 
 const singleLetterToMethod: { [key: string]: string } = {
@@ -24,9 +24,23 @@ const singleLetterToMethod: { [key: string]: string } = {
   u: 'update',
 }
 
+const ruleNames = [
+  'read',
+  'write',
+  'all',
+  'find',
+  'get',
+  'create',
+  'update',
+  'patch',
+  'remove',
+]
+
 function singleLetterRuleNames(names: string, method: string) {
-  const ruleNames = names.split('')
-  const matchingMethods = ruleNames.map(ruleName => singleLetterToMethod[ruleName])
+  if (ruleNames.includes(names)) return false
+
+  const singleLetters = names.split('')
+  const matchingMethods = singleLetters.map(ruleName => singleLetterToMethod[ruleName])
   return matchingMethods.includes(method)
 }
 
