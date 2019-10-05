@@ -61,12 +61,74 @@ describe('allow hook', () => {
     const method = 'made-up-method'
     const rule = jest.fn()
 
-    const { params } = await simulate(method)
+    await simulate(method)
       .withRules({
         [method]: rule,
       })
       .run()
+
     expect(rule).toBeCalled()
+  })
+
+  describe('with single letter rules', () => {
+    it('runs f rule', async () => {
+      const rule = jest.fn()
+
+      await simulate('find')
+        .withRules({
+          f: rule,
+        })
+        .run()
+
+      expect(rule).toBeCalled()
+    })
+
+    it('runs rule with multiple single letters in name', async () => {
+      const rule = jest.fn()
+
+      await simulate('find')
+        .withRules({
+          fg: rule,
+        })
+        .run()
+
+      expect(rule).toBeCalled()
+    })
+  })
+
+  describe('with special rule keywords', () => {
+    it('runs read rule on find & get but not on create, update, patch, remove', async () => {
+      const rule = jest.fn()
+      const rules = { read: rule }
+
+      await simulate('find').withRules(rules).run()
+      await simulate('get').withRules(rules).run()
+
+      // Should not run
+      await simulate('create').withRules(rules).run()
+      await simulate('update').withRules(rules).run()
+      await simulate('patch').withRules(rules).run()
+      await simulate('remove').withRules(rules).run()
+
+      expect(rule).toBeCalledTimes(2)
+    })
+
+    it('runs write rule on create, update, patch, remove but not on find, get', async () => {
+      const rule = jest.fn()
+      const rules = { write: rule }
+
+      await simulate('create').withRules(rules).run()
+      await simulate('update').withRules(rules).run()
+      await simulate('patch').withRules(rules).run()
+      await simulate('remove').withRules(rules).run()
+
+      // Should not run
+      await simulate('find').withRules(rules).run()
+      await simulate('get').withRules(rules).run()
+
+      expect(rule).toBeCalledTimes(4)
+    })
+
   })
 
 })
