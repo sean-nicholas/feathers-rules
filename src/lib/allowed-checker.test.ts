@@ -93,4 +93,24 @@ describe('allowedChecker', () => {
     expect(doCheck).toThrow('Request is not allowed for service: UserService')
   })
 
+  it('shows the id in the exception message', () => {
+    const doCheck = () => check({
+      ...defaultParams,
+      id: 'test',
+    })
+    expect(doCheck).toThrow('Request is not allowed for id: test')
+  })
+
+  it('shows the query in the exception message', () => {
+    const doCheck = () => check({
+      ...defaultParams,
+      query: {
+        first: {
+          second: 'second-value',
+        },
+      },
+    })
+    expect(doCheck).toThrow('Request is not allowed for query: {"first":{"second":"second-value"}}')
+  })
+
 })
