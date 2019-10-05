@@ -1,5 +1,6 @@
-import { Rules } from './allow'
+import { Rules, AllowFunction } from './allow'
 import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
+import { HookContext } from '@feathersjs/feathers'
 
 const basicParams = {
   provider: 'rest',
@@ -14,6 +15,18 @@ function simulate(method: string) {
   const params = { ...basicParams }
   const rules = { ...basicRules }
   return new AllowHookRequestSimulator(context, params, rules)
+}
+
+async function expectRulesToBeRunOnMethods(ruleName: string, methodNames: string[]) {
+  const calledMethods: string[] = []
+  const rule: AllowFunction = context => {
+    calledMethods.push(context.method)
+    return true
+  }
+  await simulateForAllMethods({
+    [ruleName]: rule,
+  })
+  expect(calledMethods).toEqual(methodNames)
 }
 
 async function simulateForAllMethods(rules: Rules) {
@@ -79,55 +92,39 @@ describe('allow hook', () => {
     })
   })
 
-  describe('with single letter rules', () => {
-    it('runs f rule on find but not on get, create, update, patch, remove', async () => {
-      const rule = jest.fn()
-      const rules = { f: rule }
-
-      await simulateForAllMethods(rules)
-
-      expect(rule).toBeCalledTimes(1)
-    })
-
-    it('runs fgc rule on find, get, create but not on update, patch, remove', async () => {
-      const rule = jest.fn()
-      const rules = { fgc: rule }
-
-      await simulateForAllMethods(rules)
-
-      expect(rule).toBeCalledTimes(3)
+  describe('with method rule names', () => {
+    it('runs only the rule for the corresponding method', async () => {
+      await expectRulesToBeRunOnMethods('find', ['find'])
+      await expectRulesToBeRunOnMethods('get', ['get'])
+      await expectRulesToBeRunOnMethods('create', ['create'])
+      await expectRulesToBeRunOnMethods('update', ['update'])
+      await expectRulesToBeRunOnMethods('patch', ['patch'])
+      await expectRulesToBeRunOnMethods('remove', ['remove'])
     })
   })
 
-  describe('with special rule keywords', () => {
+  describe('with single letter rules', () => {
+    it('runs f rule on find but not on get, create, update, patch, remove', async () => {
+      await expectRulesToBeRunOnMethods('f', ['find'])
+    })
+
+    it('runs fgc rule on find, get, create but not on update, patch, remove', async () => {
+      await expectRulesToBeRunOnMethods('fgc', ['find', 'get', 'create'])
+    })
+  })
+
+  describe('with special rule names', () => {
     it('runs read rule on find & get but not on create, update, patch, remove', async () => {
-      const rule = jest.fn()
-      const rules = { read: rule }
-
-      await simulateForAllMethods(rules)
-
-      expect(rule).toBeCalledTimes(2)
+      await expectRulesToBeRunOnMethods('read', ['find', 'get'])
     })
 
     it('runs write rule on create, update, patch, remove but not on find, get', async () => {
-      const rule = jest.fn()
-      const rules = { write: rule }
-
-      await simulateForAllMethods(rules)
-
-      expect(rule).toBeCalledTimes(4)
+      await expectRulesToBeRunOnMethods('write', ['create', 'update', 'patch', 'remove'])
     })
 
     it('runs all rule on all methods', async () => {
-      const rule = jest.fn()
-      const rules = { all: rule }
-
-      await simulateForAllMethods(rules)
-      await simulate('made-up-method').withRules(rules).run()
-
-      expect(rule).toBeCalledTimes(7)
+      await expectRulesToBeRunOnMethods('all', ['find', 'get', 'create', 'update', 'patch', 'remove'])
     })
-
   })
 
 })
