@@ -1,6 +1,5 @@
 import { Rules, AllowFunction } from './allow'
 import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
-import { HookContext } from '@feathersjs/feathers'
 
 const basicParams = {
   provider: 'rest',

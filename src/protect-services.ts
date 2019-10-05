@@ -1,6 +1,5 @@
-import { Application, HookContext, Service, HooksObject } from '@feathersjs/feathers'
+import { Application, Service } from '@feathersjs/feathers'
 import { allowedChecker, AllowedCheckerParams } from './lib/allowed-checker'
-import * as _ from 'lodash'
 import { checkAllowed } from './hooks/check-allowed'
 
 export interface ProtectServicesOptions {
