@@ -1,43 +1,96 @@
-import feathers, { Params, Service } from '@feathersjs/feathers'
-import { allow, Rules } from './allow'
-import { MockService, FIND_RETURN } from '../../tests/mock-service'
-import { protectServices } from '..'
-import { Forbidden } from '@feathersjs/errors'
+import { Rules } from './allow'
+import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
 
-function setupApp(hook: any) {
-  const app = feathers()
-  app.use('/test', new MockService())
-  const service: Service<any> = app.service('test')
-  service.hooks({
-    before: {
-      all: [hook],
-    },
-  })
-  app.configure(protectServices())
-  return { app, service }
+const basicParams = {
+  provider: 'rest',
 }
 
+const basicRules: Rules = {
+  find: context => !!(context.params.query && context.params.query.test === true),
+  get: context => context.id === 'test-id',
+  create: context => !!(context.data && context.data.testData === 'test'),
+}
+
+function simulate(method: string) {
+  const context = { method }
+  const params = { ...basicParams }
+  const rules = { ...basicRules }
+  return new AllowHookRequestSimulator(context, params, rules)
+}
+
+const FIND_QUERY_THAT_IS_ALLOWED = { test: true }
+const GET_ID_THAT_IS_ALLOWED = 'test-id'
+const CREATE_DATA_THAT_IS_ALLOWED = { testData: 'test' }
+
 describe('allow hook', () => {
-  const basicRules: Rules = {
-    find: context => {
-      return !!(context.params.query && context.params.query.test === true)
-    },
-  }
+  describe('does skip rules checking', () => {
+    it('if it is an internal call', async () => {
+      const findRule = jest.fn()
 
-  const basicParams = {
-    provider: 'rest',
-  }
+      await simulate('find')
+        .withParams({ provider: undefined })
+        .withRules({ find: findRule })
+        .run()
 
-  it('does skip checking if it is an internal call', () => {
-    const { service } = setupApp(allow(basicRules))
-    const res = service.find()
-    expect(res).resolves.toBe(FIND_RETURN)
+      expect(findRule).not.toBeCalled()
+    })
+
+    it('if it was allowed before', async () => {
+      const findRule = jest.fn()
+
+      await simulate('find')
+        .withAdditionalParams({ allowed: true })
+        .withRules({ find: findRule })
+        .run()
+
+      expect(findRule).not.toBeCalled()
+    })
   })
 
-  it('does throw if it is an external call & rules dont match', () => {
-    const { service } = setupApp(allow(basicRules))
-    const res = service.find(basicParams)
-    expect(res).rejects.toBeInstanceOf(Forbidden)
+  describe('with find rule', () => {
+    it('does not set params.allow to true if rule does not match', async () => {
+      const { params } = await simulate('find').run()
+      expect(params.allowed).toBe(undefined)
+    })
+
+    it('does set params.allow to true if rule matches', async () => {
+      const { params } = await simulate('find')
+        .withAdditionalParams({ query: FIND_QUERY_THAT_IS_ALLOWED })
+        .run()
+      expect(params.allowed).toBe(true)
+    })
+  })
+
+  describe('with get rule', () => {
+    it('does not set params.allow to true if rule does not match', async () => {
+      const { params } = await simulate('get')
+        .withAdditionalContext({ id: 'not-allowed' })
+        .run()
+      expect(params.allowed).toBe(undefined)
+    })
+
+    it('does set params.allow to true if rule matches', async () => {
+      const { params } = await simulate('get')
+        .withAdditionalContext({ id: GET_ID_THAT_IS_ALLOWED })
+        .run()
+      expect(params.allowed).toBe(true)
+    })
+  })
+
+  describe('with create rule', () => {
+    it('does not set params.allow to true if rule does not match', async () => {
+      const { params } = await simulate('create')
+        .withAdditionalContext({ data: { testData: 'not-allowed' } })
+        .run()
+      expect(params.allowed).toBe(undefined)
+    })
+
+    it('does set params.allow to true if rule matches', async () => {
+      const { params } = await simulate('create')
+        .withAdditionalContext({ data: CREATE_DATA_THAT_IS_ALLOWED })
+        .run()
+      expect(params.allowed).toBe(true)
+    })
   })
 
 })
