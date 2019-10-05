@@ -3,5 +3,9 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
-  coveragePathIgnorePatterns: ['/tests/']
+  coveragePathIgnorePatterns: ['/tests/'],
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname',
+  ],
 }
