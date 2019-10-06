@@ -79,7 +79,23 @@ describe('protectServices', () => {
   })
 
   it('does not add the allowHook on omitted services', () => {
-    // TODO: Add test
+    const app = feathers()
+    app.use('/test', new MockService())
+    app.use('/omit', new MockService())
+    app.configure(protectServices({ omitServices: ['omit'] }))
+
+    const params: Params = {
+      provider: 'rest',
+    }
+
+    const testSrv = app.service('test')
+    const omitSrv = app.service('omit')
+
+    const testResult = testSrv.find(params)
+    expect(testResult).rejects.toBeInstanceOf(Forbidden)
+
+    const omitResult = omitSrv.find(params)
+    expect(omitResult).resolves.toBe(FIND_RETURN)
   })
 
 })
