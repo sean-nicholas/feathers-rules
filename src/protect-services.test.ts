@@ -77,4 +77,9 @@ describe('protectServices', () => {
     })
     expect(positiveResult).resolves.toBe(FIND_RETURN)
   })
+
+  it('does not add the allowHook on omitted services', () => {
+    // TODO: Add test
+  })
+
 })
