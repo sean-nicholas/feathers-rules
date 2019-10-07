@@ -51,27 +51,12 @@ app.configure(protectServices())
 ```
 
 
-### Add allow hook
-
-To grant access to your services you add the `allow(rules)` hook to your app / service hooks:
-
-```js
-service.hooks({
-  before: {
-    all: [
-      allow(rules),
-    ],
-  },
-})
-```
-
-
 ## Writing rules
 
 A simple `rules` object could look like this:
 
 ```js
-export const rules = {
+export const blogPostRules = {
   find: (context) => {
     // Only allow querying for the users documents
     return context.params.query && context.params.query.userId === context.params.user._id
@@ -83,18 +68,44 @@ export const rules = {
 }
 ```
 
-The property names are equal to the service methods (`find | get | create | update | patch | remove`) and the values are functions that get feathers' `HookContext` as input and return a `boolean` or a `Promise` of a `boolean`.
+The method names are equal to the service methods (`find | get | create | update | patch | remove`) and the values are functions that get feathers' `HookContext` as input and return a `boolean` or a `Promise` of a `boolean`.
 
 
-### Special keywords
+### Using rules
 
-Also you can use the following special keywords as property names:
+To grant access to your services you add the `allow(rules)` hook to your app / service hooks:
+
+```js
+blogPostService.hooks({
+  before: {
+    all: [
+      allow(blogPostRules),
+    ],
+  },
+})
+```
+
+
+### Special method names
+
+You can use the following special keywords as method names, too:
 * `all`: Is checked for every method
 * `read`: Is checked for `find` & `get`
 * `write`: Is checked for `create`, `update`, `patch` & `remove`
 
+For example:
 
-### Single letter rules
+```js
+export const blogPostRules = {
+  read: (context) => {
+    // Allow everyone to get or find all posts
+    return true
+  }
+}
+```
+
+
+### Single letter method names
 
 Another way to run one rule for multiple service methods is to use single letter rules:
 
