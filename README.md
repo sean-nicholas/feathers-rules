@@ -83,7 +83,7 @@ export const rules = {
 }
 ```
 
-The property names are equal to the service methods (`find | get | create | update | patch | remove`) and the values are functions that get the `HookContext` as input and return a `boolean`.
+The property names are equal to the service methods (`find | get | create | update | patch | remove`) and the values are functions that get feathers' `HookContext` as input and return a `boolean` or a `Promise` of a `boolean`.
 
 
 ### Special keywords
@@ -126,7 +126,7 @@ As described above a Forbidden-Exception is thrown.
 
 The exceptions message gives insights what went wrong.
 But because all rules have returned false there is no single rule that forbid access.
-Hence we can't say something like "Your query has not your userId in it".
+Hence we can't say something like "Your query does not contain your userId".
 
 Therefore the exception message contains the service name, method, id, data & query of the request.
 This helps when you are sending many requests and want to know which one failed (especially helpful when debugging websockets).
@@ -141,7 +141,7 @@ You can add additional `protectedFields`. See Advanced configuration.
 
 You should not run the users query in your `find` or `get` rule and check if the user has access to the returned documents.
 This can lead to side channel attacks like measuring the time how long the request took and figuring out if and approx. how many documents the rule has checked.
-Always check the query directly: Is the userId in the query, etc.?
+Always check the query directly: Does the query contain the userId, etc.?
 
 
 ## Advanced configuration
