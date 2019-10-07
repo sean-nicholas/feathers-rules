@@ -29,10 +29,10 @@ No problem, just implement it ;)
 
 ### Setup
 
-Import the proctedServices function:
+In your app file import the `protectServices()` function:
 
 ```js
-import { protectServices } from 'feathers-rules'
+const { protectServices } = require('feathers-rules')
 ```
 
 Add the following code **after** you defined all your hooks:
@@ -74,11 +74,11 @@ A simple `rules` object could look like this:
 export const rules = {
   find: (context) => {
     // Only allow querying for the users documents
-    return context.params.query && context.params.query.userId === context.params.user
+    return context.params.query && context.params.query.userId === context.params.user._id
   },
   create: (context) => {
     // Only allow creating a document if user creates a document for him-/herself
-    return context.data && context.data.userId === context.params.user
+    return context.data && context.data.userId === context.params.user._id
   },
 }
 ```
@@ -131,7 +131,7 @@ Hence we can't say something like "Your query has not your userId in it".
 Therefore the exception message contains the service name, method, id, data & query of the request.
 This helps when you are sending many requests and want to know which one failed (especially helpful when debugging websockets).
 
-To add an additional layer of protection the data properties `password`, `newPassword`, `oldPassword` are replaced with a placeholder.
+To add an additional layer of protection the data properties `password`, `newPassword` & `oldPassword` are replaced with a placeholder.
 You can add additional `protectedFields`. See Advanced configuration.
 
 
@@ -140,35 +140,37 @@ You can add additional `protectedFields`. See Advanced configuration.
 ### Don't check results in find or get
 
 You should not run the users query in your `find` or `get` rule and check if the user has access to the returned documents.
-This can lead to side channel attacks like measuring the time how long the request took and figuring out if and how many documents the rule has checked.
-Always check the query directly: It the userId in the query, etc.
+This can lead to side channel attacks like measuring the time how long the request took and figuring out if and approx. how many documents the rule has checked.
+Always check the query directly: Is the userId in the query, etc.?
 
 
 ## Advanced configuration
 
 ## protectServices
 
-The `protectServices(options)` function is preconfigured with the following options. 
+The `protectServices()` function is preconfigured with the following options. 
 You can overwrite them.
 
 ```js
-{
+const options = {
   // Services that should not be protected
   omitServices: ['authentication'],
   // function that checks if params.allow is true, else throws exception
   allowedChecker: allowedChecker(),
 }
+
+app.configure(protectServices(options))
 ```
 
 ### allowChecker
 
-The allowChecker can be configured with the following options.
+The allowChecker can be configured with the following options:
 
 ```js
 {
-  // The word that is printed instead of the fields value
+  // The text that is printed instead of the fields value
   protectWord: '[HIDDEN]',
-  // Fields in context.data that should not be printed in the exception message
+  // Fields in context.data that should be replaced with protectWord in the exception message
   protectedFields: ['password', 'newPassword', 'oldPassword'],
 }
 ```
@@ -176,11 +178,11 @@ The allowChecker can be configured with the following options.
 To add those options you must configure `protectServices()` with your own allowChecker:
 
 ```js
-protectServices({
+app.configure(protectServices({
   allowedChecker: allowedChecker({
     protectWord: 'NOTHING-TO-SEE-HERE'
   })
-})
+}))
 ```
 
 ## FAQ
