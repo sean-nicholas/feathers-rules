@@ -16,7 +16,7 @@ describe('protectServices', () => {
     expect(allowedChecker).toBeCalledTimes(1)
   })
 
-  it('the service method throws if not allowed', () => {
+  it('the service method throws if not allowed', async () => {
     const app = feathers()
     app.use('/test', new MockService())
     app.configure(protectServices())
@@ -27,25 +27,25 @@ describe('protectServices', () => {
     const service = app.service('test')
 
     const findRes = service.find(params)
-    expect(findRes).rejects.toBeInstanceOf(Forbidden)
+    await expect(findRes).rejects.toBeInstanceOf(Forbidden)
 
     const getRes = service.get(null, params)
-    expect(getRes).rejects.toBeInstanceOf(Forbidden)
+    await expect(getRes).rejects.toBeInstanceOf(Forbidden)
 
     const createRes = service.create({}, params)
-    expect(createRes).rejects.toBeInstanceOf(Forbidden)
+    await expect(createRes).rejects.toBeInstanceOf(Forbidden)
 
     const updateRes = service.update(null, {}, params)
-    expect(updateRes).rejects.toBeInstanceOf(Forbidden)
+    await expect(updateRes).rejects.toBeInstanceOf(Forbidden)
 
     const patchRes = service.patch(null, {}, params)
-    expect(patchRes).rejects.toBeInstanceOf(Forbidden)
+    await expect(patchRes).rejects.toBeInstanceOf(Forbidden)
 
     const removeRes = service.remove(null, params)
-    expect(removeRes).rejects.toBeInstanceOf(Forbidden)
+    await expect(removeRes).rejects.toBeInstanceOf(Forbidden)
   })
 
-  it('rules are run and grant access', () => {
+  it('rules are run and grant access', async () => {
     const app = feathers()
     app.use('/test', new MockService())
     const service = app.service('test')
@@ -67,7 +67,7 @@ describe('protectServices', () => {
     }
 
     const negativeResult = app.service('test').find(params)
-    expect(negativeResult).rejects.toBeInstanceOf(Forbidden)
+    await expect(negativeResult).rejects.toBeInstanceOf(Forbidden)
 
     const positiveResult = service.find({
       ...params,
@@ -75,10 +75,10 @@ describe('protectServices', () => {
         testQuery: 'yes',
       },
     })
-    expect(positiveResult).resolves.toBe(FIND_RETURN)
+    await expect(positiveResult).resolves.toBe(FIND_RETURN)
   })
 
-  it('does not add the allowHook on omitted services', () => {
+  it('does not add the allowHook on omitted services', async () => {
     const app = feathers()
     app.use('/test', new MockService())
     app.use('/omit', new MockService())
@@ -92,10 +92,10 @@ describe('protectServices', () => {
     const omitSrv = app.service('omit')
 
     const testResult = testSrv.find(params)
-    expect(testResult).rejects.toBeInstanceOf(Forbidden)
+    await expect(testResult).rejects.toBeInstanceOf(Forbidden)
 
     const omitResult = omitSrv.find(params)
-    expect(omitResult).resolves.toBe(FIND_RETURN)
+    await expect(omitResult).resolves.toBe(FIND_RETURN)
   })
 
 })
