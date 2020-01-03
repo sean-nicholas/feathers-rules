@@ -1,12 +1,14 @@
 import { Rules, AllowFunction } from './allow'
 import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
+import { BadRequest, Forbidden } from '@feathersjs/errors'
 
 const basicParams = {
   provider: 'rest',
 }
 
 const basicRules: Rules = {
-  find: context => !!(context.params.query && context.params.query.test === true),
+  find: context =>
+    !!(context.params.query && context.params.query.test === true),
 }
 
 function simulate(method: string) {
@@ -125,5 +127,21 @@ describe('allow hook', () => {
       await expectRulesToBeRunOnMethods('all', ['find', 'get', 'create', 'update', 'patch', 'remove'])
     })
   })
+
+  it('does not catch non feathers-rules errors', async () => {
+    async function throwInRule(errorClass: any) {
+      await simulate('find')
+        .withRules({ find: () => { throw new errorClass() } })
+        .run()
+    }
+
+    await expect(throwInRule(BadRequest)).rejects.toBeInstanceOf(BadRequest)
+    await expect(throwInRule(Forbidden)).rejects.toBeInstanceOf(Forbidden)
+    await expect(throwInRule(Error)).rejects.toBeInstanceOf(Error)
+  })
+
+  // it('does catch FeathersRulesError & puts errors in error property', () => {
+
+  // })
 
 })
