@@ -1,6 +1,6 @@
 import { allowedChecker, AllowedCheckerParams } from './allowed-checker'
 import { Forbidden } from '@feathersjs/errors'
-import { rulesRealm } from './rules-realm'
+import { rulesRealm, getRealm } from './rules-realm'
 
 describe('allowedChecker', () => {
   const defaultParams: AllowedCheckerParams = { provider: 'rest' }
@@ -19,7 +19,7 @@ describe('allowedChecker', () => {
     }
     check(params)
 
-    expect(params[rulesRealm].allowed).toBe(true)
+    expect(getRealm(params).allowed).toBe(true)
   })
 
   it('does throw if params.allowed is not true', () => {
