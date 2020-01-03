@@ -1,5 +1,5 @@
 import { HookContext } from '@feathersjs/feathers'
-import { rulesRealm } from '../lib/rules-realm'
+import { rulesRealm, addErrors as addErrorsToRealm } from '../lib/rules-realm'
 import { RulesError } from '../errors/rules-error'
 import { BadRequest } from '@feathersjs/errors'
 
@@ -77,7 +77,7 @@ export const allow = (allowFuncs: Rules) => {
         }
       } catch (error) {
         if (!(error instanceof RulesError)) throw error
-        throw new BadRequest('Validation Error', { errors: error.getErrors() })
+        addErrorsToRealm(context.params, error.getErrors())
       }
     }
   }

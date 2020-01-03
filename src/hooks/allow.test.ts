@@ -147,7 +147,7 @@ describe('allow hook', () => {
     await expect(throwInRule(Error)).rejects.toBeInstanceOf(Error)
   })
 
-  it('catches RulesError but throws BadRequestError with errors from RulesError', async () => {
+  it('catches RulesError & puts errors in error realm', async () => {
     const errors: ErrorInfo[] = [
       {
         message: 'Error 1',
@@ -159,15 +159,12 @@ describe('allow hook', () => {
       },
     ]
 
-    const withRulesError = simulate('find')
+    const { params } = await simulate('find')
       .withRules({ find: () => { throw new RulesError(errors) } })
       .run()
 
-    await expect(withRulesError).rejects.not.toBeInstanceOf(RulesError)
-    await expect(withRulesError).rejects.toBeInstanceOf(BadRequest)
-    await expect(withRulesError).rejects.toMatchObject({
-      errors,
-    })
+    await expect(params[rulesRealm].allowed).not.toBe(true)
+    await expect(params[rulesRealm].errors).toEqual([errors])
   })
 
 })
