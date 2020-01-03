@@ -9,8 +9,20 @@ export function getRealm(params: Params) {
   return params[rulesRealm] || {}
 }
 
+export function setAllowedToTrueInRealm(params: Params) {
+  initRealm(params)
+  params[rulesRealm].allowed = true
+  return params
+}
+
 export function addErrorsToRealm(params: Params, errors: ErrorInfo[]) {
-  if (!params[rulesRealm]) params[rulesRealm] = {}
+  initRealm(params)
   if (!params[rulesRealm].errors) params[rulesRealm].errors = []
   params[rulesRealm].errors.push(errors)
+  return params
+}
+
+function initRealm(params: Params) {
+  if (!params[rulesRealm]) params[rulesRealm] = {}
+
 }

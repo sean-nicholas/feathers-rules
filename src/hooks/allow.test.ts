@@ -1,7 +1,7 @@
 import { Rules, AllowFunction } from './allow'
 import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
 import { BadRequest, Forbidden } from '@feathersjs/errors'
-import { rulesRealm, getRealm } from '../lib/rules-realm'
+import { getRealm, setAllowedToTrueInRealm } from '../lib/rules-realm'
 import { RulesError } from '../errors/rules-error'
 import { ErrorInfo } from '../errors/error-info'
 
@@ -74,11 +74,7 @@ describe('allow hook', () => {
       const findRule = jest.fn()
 
       await simulate('find')
-        .withAdditionalParams({
-          [rulesRealm]: {
-            allowed: true,
-          },
-        })
+        .withAdditionalParams(setAllowedToTrueInRealm({}))
         .withRules({ find: findRule })
         .run()
 

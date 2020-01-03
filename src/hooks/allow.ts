@@ -1,7 +1,6 @@
 import { HookContext } from '@feathersjs/feathers'
-import { rulesRealm, addErrorsToRealm as addErrorsToRealm } from '../lib/rules-realm'
+import { addErrorsToRealm as addErrorsToRealm, setAllowedToTrueInRealm, getRealm } from '../lib/rules-realm'
 import { RulesError } from '../errors/rules-error'
-import { BadRequest } from '@feathersjs/errors'
 
 export type AllowFunction<T = any> = (context: HookContext<T>) => boolean | Promise<boolean>
 
@@ -52,10 +51,8 @@ export const allow = (allowFuncs: Rules) => {
     // If it was an internal call then skip this hook
     if (!context.params.provider) return context
 
-    if (!context.params[rulesRealm]) context.params[rulesRealm] = {}
-
     // Was previously allowed --> skip hook
-    if (context.params[rulesRealm].allowed) return context
+    if (getRealm(context.params).allowed) return context
 
     const filteredFuncs = Object.entries(allowFuncs)
       .filter(([ruleName]) => {
@@ -72,7 +69,7 @@ export const allow = (allowFuncs: Rules) => {
       try {
         const allowed = await allowFunc(context)
         if (allowed) {
-          context.params[rulesRealm].allowed = true
+          setAllowedToTrueInRealm(context.params)
           return context
         }
       } catch (error) {
