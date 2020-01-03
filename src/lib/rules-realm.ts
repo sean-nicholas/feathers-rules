@@ -5,8 +5,12 @@ import { Params } from '@feathersjs/feathers'
 // https://github.com/microsoft/TypeScript/issues/1863
 export const rulesRealm: string = Symbol('Rules Realm') as unknown as string
 
-export function getRealm(params: Params) {
-  return params[rulesRealm] || {}
+export function getAllowedInRealm(params: Params): boolean {
+  return getRealm(params).allowed
+}
+
+export function getErrorsInRealm(params: Params): ErrorInfo[] {
+  return getRealm(params).errors
 }
 
 export function setAllowedToTrueInRealm(params: Params) {
@@ -22,7 +26,10 @@ export function addErrorsToRealm(params: Params, errors: ErrorInfo[]) {
   return params
 }
 
+function getRealm(params: Params) {
+  return params[rulesRealm] || {}
+}
+
 function initRealm(params: Params) {
   if (!params[rulesRealm]) params[rulesRealm] = {}
-
 }

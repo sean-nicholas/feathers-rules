@@ -1,7 +1,7 @@
 import { Rules, AllowFunction } from './allow'
 import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
 import { BadRequest, Forbidden } from '@feathersjs/errors'
-import { getRealm, setAllowedToTrueInRealm } from '../lib/rules-realm'
+import { getAllowedInRealm, setAllowedToTrueInRealm, getErrorsInRealm } from '../lib/rules-realm'
 import { RulesError } from '../errors/rules-error'
 import { ErrorInfo } from '../errors/error-info'
 
@@ -85,14 +85,14 @@ describe('allow hook', () => {
   describe('with find rule', () => {
     it('does not set params.allow to true if rule does not match', async () => {
       const { params } = await simulate('find').run()
-      expect(getRealm(params).allowed).toBe(undefined)
+      expect(getAllowedInRealm(params)).toBe(undefined)
     })
 
     it('does set params.allow to true if rule matches', async () => {
       const { params } = await simulate('find')
         .withAdditionalParams({ query: FIND_QUERY_THAT_IS_ALLOWED })
         .run()
-      expect(getRealm(params).allowed).toBe(true)
+      expect(getAllowedInRealm(params)).toBe(true)
     })
   })
 
@@ -159,8 +159,8 @@ describe('allow hook', () => {
       .withRules({ find: () => { throw new RulesError(errors) } })
       .run()
 
-    await expect(getRealm(params).allowed).not.toBe(true)
-    await expect(getRealm(params).errors).toEqual([errors])
+    await expect(getAllowedInRealm(params)).not.toBe(true)
+    await expect(getErrorsInRealm(params)).toEqual([errors])
   })
 
 })
