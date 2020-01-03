@@ -2,6 +2,8 @@ import { Rules, AllowFunction } from './allow'
 import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
 import { BadRequest, Forbidden } from '@feathersjs/errors'
 import { rulesRealm } from '../lib/rules-realm'
+import { RulesError } from '../errors/rules-error'
+import { ErrorInfo } from '../errors/error-info'
 
 const basicParams = {
   provider: 'rest',
@@ -145,8 +147,27 @@ describe('allow hook', () => {
     await expect(throwInRule(Error)).rejects.toBeInstanceOf(Error)
   })
 
-  // it('does catch FeathersRulesError & puts errors in error property', () => {
+  it('catches RulesError but throws BadRequestError with errors from RulesError', async () => {
+    const errors: ErrorInfo[] = [
+      {
+        message: 'Error 1',
+      },
+      {
+        message: 'Error 2',
+        code: 'ERROR_2',
+        field: 'firstField',
+      },
+    ]
 
-  // })
+    const withRulesError = simulate('find')
+      .withRules({ find: () => { throw new RulesError(errors) } })
+      .run()
+
+    await expect(withRulesError).rejects.not.toBeInstanceOf(RulesError)
+    await expect(withRulesError).rejects.toBeInstanceOf(BadRequest)
+    await expect(withRulesError).rejects.toMatchObject({
+      errors,
+    })
+  })
 
 })

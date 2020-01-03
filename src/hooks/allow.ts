@@ -1,5 +1,7 @@
 import { HookContext } from '@feathersjs/feathers'
 import { rulesRealm } from '../lib/rules-realm'
+import { RulesError } from '../errors/rules-error'
+import { BadRequest } from '@feathersjs/errors'
 
 export type AllowFunction<T = any> = (context: HookContext<T>) => boolean | Promise<boolean>
 
@@ -67,10 +69,15 @@ export const allow = (allowFuncs: Rules) => {
       .map(([ruleName, allowFunc]) => allowFunc as AllowFunction)
 
     for (const allowFunc of filteredFuncs) {
-      const allowed = await allowFunc(context)
-      if (allowed) {
-        context.params[rulesRealm].allowed = true
-        return context
+      try {
+        const allowed = await allowFunc(context)
+        if (allowed) {
+          context.params[rulesRealm].allowed = true
+          return context
+        }
+      } catch (error) {
+        if (!(error instanceof RulesError)) throw error
+        throw new BadRequest('Validation Error', { errors: error.getErrors() })
       }
     }
   }
