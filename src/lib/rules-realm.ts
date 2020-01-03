@@ -9,7 +9,7 @@ export function getRealm(params: Params) {
   return params[rulesRealm] || {}
 }
 
-export function addErrors(params: Params, errors: ErrorInfo[]) {
+export function addErrorsToRealm(params: Params, errors: ErrorInfo[]) {
   if (!params[rulesRealm]) params[rulesRealm] = {}
   if (!params[rulesRealm].errors) params[rulesRealm].errors = []
   params[rulesRealm].errors.push(errors)

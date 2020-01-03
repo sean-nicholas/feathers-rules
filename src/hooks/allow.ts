@@ -1,5 +1,5 @@
 import { HookContext } from '@feathersjs/feathers'
-import { rulesRealm, addErrors as addErrorsToRealm } from '../lib/rules-realm'
+import { rulesRealm, addErrorsToRealm as addErrorsToRealm } from '../lib/rules-realm'
 import { RulesError } from '../errors/rules-error'
 import { BadRequest } from '@feathersjs/errors'
 
