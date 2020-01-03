@@ -159,8 +159,8 @@ describe('allow hook', () => {
       .withRules({ find: () => { throw new RulesError(errors) } })
       .run()
 
-    await expect(getAllowedInRealm(params)).not.toBe(true)
-    await expect(getErrorsInRealm(params)).toEqual([errors])
+    expect(getAllowedInRealm(params)).not.toBe(true)
+    expect(getErrorsInRealm(params)).toEqual([errors])
   })
 
 })
