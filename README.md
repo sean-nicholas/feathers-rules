@@ -114,7 +114,7 @@ export const rules = {
   // Runs only for create, update & patch
   cup: (context) => {
     return context.params.query && context.params.query.userId === context.params.user
-  },
+  }
 }
 ```
 
@@ -138,12 +138,60 @@ As described above a Forbidden-Exception is thrown.
 The exceptions message gives insights what went wrong.
 But because all rules have returned false there is no single rule that forbid access.
 Hence we can't say something like "Your query does not contain your userId".
+(To get such behavior see [Throwing RulesError in Rules](#throwing-ruleserror-in-rules))
 
 Therefore the exception message contains the service name, method, id, data & query of the request.
 This helps when you are sending many requests and want to know which one failed (especially helpful when debugging websockets).
 
 To add an additional layer of protection the data properties `password`, `newPassword` & `oldPassword` are replaced with a placeholder.
 You can add additional `protectedFields`. See Advanced configuration.
+
+## Throwing RulesError in Rules
+
+If you want to show errors to the user (like validation errors) you can throw a `RulesError` with an array of `ErrorInfos`.
+
+```js
+// Using some validation library
+const { isValid, errors } = validate(context.data, schema)
+
+if (!isValid) {
+  throw new RulesError(errors)
+}
+```
+
+A `RulesError` will be translated to a `BadRequest` only if all rules returned `false` (to be more specific: not `true`).
+If some rule returned `true` the access is always granted.
+Here is an example:
+
+```js
+// admin.rules.js
+export const rules = {
+  write: (context) => {
+    return context.params.user.role === 'admin'
+  }
+}
+
+// user.rules.js
+const schema = require('./user.schema.json')
+export const rules = {
+  write: (context) => {
+    const { isValid, errors } = validate(context.data, schema)
+    if (!isValid) throw new RulesError(errors)
+  }
+}
+```
+
+In this example the admin can do whatever she wants but user requests will always be validated.
+
+If the admin is sending a request the `RulesError` will be thrown because all rules are always run.
+Nevertheless, the request will succeed because the admin rule returns true.
+No error is shown to the admin.
+
+If the user is sending the request a `BadRequest` is thrown with the errors from `RulesError`.
+This is due to the fact that the admin rule returns `false` and the user rule throws --> no rule returns true.
+The request is not allowed and therefore the errors are send to the client.
+
+IMPORTANT: Currently only the errors from the first throwing rule are send to the client.
 
 
 ## Good practices
@@ -153,6 +201,32 @@ You can add additional `protectedFields`. See Advanced configuration.
 You should not run the users query in your `find` or `get` rule and check if the user has access to the returned documents.
 This can lead to side channel attacks like measuring the time how long the request took and figuring out if and approx. how many documents the rule has checked.
 Always check the query directly: Does the query contain the userId, etc.?
+
+
+### Early escape
+
+If you have many `allow(rules)` calls in your hooks, try to escape as early as possible within your rules.
+All rules are executed each time a request is sent.
+If you have heavyweight rules (e.g. querying the database), try putting them at the end of your function:
+
+```js
+export const rules = {
+  write: async (context) => {
+    // Lightweight rules block
+    const { isValid, errors } = validate(context.data, lightweightRules)
+    if (!isValid) throw new RulesError(errors) // Early escape
+
+    // Heavyweight rules block
+    const allTheData = await context.app.service('someService').find({})
+    
+    // Do some complex validation here...
+    
+    if (passedComplexValidation) return true
+    
+    return false
+  }
+}
+```
 
 
 ## Advanced configuration
