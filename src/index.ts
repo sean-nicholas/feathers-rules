@@ -2,3 +2,4 @@ export { protectServices, ProtectServicesOptions, defaultOptions } from './prote
 export { allow } from './hooks/allow'
 export { checkAllowed } from './hooks/check-allowed'
 export { allowedChecker } from './lib/allowed-checker'
+export { rulesRealm } from './lib/rules-realm'

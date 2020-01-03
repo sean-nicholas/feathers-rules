@@ -1,5 +1,6 @@
 import { allowedChecker, AllowedCheckerParams } from './allowed-checker'
 import { Forbidden } from '@feathersjs/errors'
+import { rulesRealm } from './rules-realm'
 
 describe('allowedChecker', () => {
   const defaultParams: AllowedCheckerParams = { provider: 'rest' }
@@ -12,11 +13,13 @@ describe('allowedChecker', () => {
   it('does not change params.allowed if an earlier rule already allowed access', () => {
     const params = {
       ...defaultParams,
-      allowed: true,
+      [rulesRealm]: {
+        allowed: true,
+      },
     }
     check(params)
 
-    expect(params.allowed).toBe(true)
+    expect(params[rulesRealm].allowed).toBe(true)
   })
 
   it('does throw if params.allowed is not true', () => {

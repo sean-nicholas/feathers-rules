@@ -1,6 +1,7 @@
 import { Rules, AllowFunction } from './allow'
 import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
 import { BadRequest, Forbidden } from '@feathersjs/errors'
+import { rulesRealm } from '../lib/rules-realm'
 
 const basicParams = {
   provider: 'rest',
@@ -71,7 +72,11 @@ describe('allow hook', () => {
       const findRule = jest.fn()
 
       await simulate('find')
-        .withAdditionalParams({ allowed: true })
+        .withAdditionalParams({
+          [rulesRealm]: {
+            allowed: true,
+          },
+        })
         .withRules({ find: findRule })
         .run()
 
@@ -82,14 +87,14 @@ describe('allow hook', () => {
   describe('with find rule', () => {
     it('does not set params.allow to true if rule does not match', async () => {
       const { params } = await simulate('find').run()
-      expect(params.allowed).toBe(undefined)
+      expect(params[rulesRealm].allowed).toBe(undefined)
     })
 
     it('does set params.allow to true if rule matches', async () => {
       const { params } = await simulate('find')
         .withAdditionalParams({ query: FIND_QUERY_THAT_IS_ALLOWED })
         .run()
-      expect(params.allowed).toBe(true)
+      expect(params[rulesRealm].allowed).toBe(true)
     })
   })
 

@@ -1,6 +1,7 @@
 import { Forbidden } from '@feathersjs/errors'
 import { Params } from '@feathersjs/feathers'
 import * as _ from 'lodash'
+import { rulesRealm } from './rules-realm'
 
 export interface AllowedCheckerOptions {
   /**
@@ -32,8 +33,8 @@ export function allowedChecker(options?: Partial<AllowedCheckerOptions>) {
   }
 
   return (params: AllowedCheckerParams) => {
-    if (params.allowed === true) return
     if (!params.provider) return
+    if (params[rulesRealm]?.allowed === true) return
 
     let errorDetails = ''
     if (params.name) errorDetails += ` service: ${params.name}`
