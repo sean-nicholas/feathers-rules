@@ -74,4 +74,3 @@ export function allowedChecker(options?: Partial<AllowedCheckerOptions>) {
     throw new Forbidden('Request is not allowed for' + errorDetails)
   }
 }
-
