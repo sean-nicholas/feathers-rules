@@ -1,6 +1,6 @@
 {
   "name": "feathers-rules",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Use firestore like rules in feathers to secure your services",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
