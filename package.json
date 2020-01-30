@@ -38,7 +38,7 @@
     "jest-watch-typeahead": "^0.4.0",
     "ts-jest": "^24.1.0",
     "tslint": "^5.20.0",
-    "typescript": "^3.6.3"
+    "typescript": "^3.7.4"
   },
   "dependencies": {
     "@feathersjs/errors": "^4.3.3",

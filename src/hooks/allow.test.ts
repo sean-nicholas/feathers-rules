@@ -1,12 +1,17 @@
 import { Rules, AllowFunction } from './allow'
 import { AllowHookRequestSimulator } from '../../tests/allow-hook-request-simulator'
+import { BadRequest, Forbidden } from '@feathersjs/errors'
+import { getAllowedInRealm, setAllowedToTrueInRealm, getErrorsInRealm } from '../lib/rules-realm'
+import { RulesError } from '../errors/rules-error'
+import { ErrorInfo } from '../errors/error-info'
 
 const basicParams = {
   provider: 'rest',
 }
 
 const basicRules: Rules = {
-  find: context => !!(context.params.query && context.params.query.test === true),
+  find: context =>
+    !!(context.params.query && context.params.query.test === true),
 }
 
 function simulate(method: string) {
@@ -69,7 +74,7 @@ describe('allow hook', () => {
       const findRule = jest.fn()
 
       await simulate('find')
-        .withAdditionalParams({ allowed: true })
+        .withAdditionalParams(setAllowedToTrueInRealm({}))
         .withRules({ find: findRule })
         .run()
 
@@ -80,14 +85,14 @@ describe('allow hook', () => {
   describe('with find rule', () => {
     it('does not set params.allow to true if rule does not match', async () => {
       const { params } = await simulate('find').run()
-      expect(params.allowed).toBe(undefined)
+      expect(getAllowedInRealm(params)).toBe(undefined)
     })
 
     it('does set params.allow to true if rule matches', async () => {
       const { params } = await simulate('find')
         .withAdditionalParams({ query: FIND_QUERY_THAT_IS_ALLOWED })
         .run()
-      expect(params.allowed).toBe(true)
+      expect(getAllowedInRealm(params)).toBe(true)
     })
   })
 
@@ -124,6 +129,38 @@ describe('allow hook', () => {
     it('runs all rule on all methods', async () => {
       await expectRulesToBeRunOnMethods('all', ['find', 'get', 'create', 'update', 'patch', 'remove'])
     })
+  })
+
+  it('does not catch non feathers-rules errors', async () => {
+    async function throwInRule(errorClass: any) {
+      await simulate('find')
+        .withRules({ find: () => { throw new errorClass() } })
+        .run()
+    }
+
+    await expect(throwInRule(BadRequest)).rejects.toBeInstanceOf(BadRequest)
+    await expect(throwInRule(Forbidden)).rejects.toBeInstanceOf(Forbidden)
+    await expect(throwInRule(Error)).rejects.toBeInstanceOf(Error)
+  })
+
+  it('catches RulesError & puts errors in error realm', async () => {
+    const errors: ErrorInfo[] = [
+      {
+        message: 'Error 1',
+      },
+      {
+        message: 'Error 2',
+        code: 'ERROR_2',
+        field: 'firstField',
+      },
+    ]
+
+    const { params } = await simulate('find')
+      .withRules({ find: () => { throw new RulesError(errors) } })
+      .run()
+
+    expect(getAllowedInRealm(params)).not.toBe(true)
+    expect(getErrorsInRealm(params)).toEqual([errors])
   })
 
 })

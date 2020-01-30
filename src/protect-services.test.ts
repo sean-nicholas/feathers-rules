@@ -1,8 +1,9 @@
 import feathers, { Params, HookContext } from '@feathersjs/feathers'
 import { protectServices } from './protect-services'
-import { MockService, FIND_RETURN } from '../tests/mock-service'
-import { Forbidden } from '@feathersjs/errors'
+import { MockService, FIND_RETURN, CREATE_RETURN } from '../tests/mock-service'
+import { Forbidden, BadRequest } from '@feathersjs/errors'
 import { allow } from './hooks/allow'
+import { RulesError } from './errors/rules-error'
 
 describe('protectServices', () => {
   it('runs the allowedChecker function before a service method is run', async () => {
@@ -51,7 +52,7 @@ describe('protectServices', () => {
     const service = app.service('test')
     service.hooks({
       before: {
-        find: [
+        all: [
           allow({
             find: (context: HookContext<any>) => {
               return !!(context.params.query && context.params.query.testQuery === 'yes')
@@ -96,6 +97,54 @@ describe('protectServices', () => {
 
     const omitResult = omitSrv.find(params)
     await expect(omitResult).resolves.toBe(FIND_RETURN)
+  })
+
+  describe('RulesErrors', () => {
+    const defaultHooks = {
+      before: {
+        all: [
+          allow({
+            create: () => {
+              throw new RulesError([
+                { message: 'id field is malformed' },
+              ])
+            },
+          }),
+        ],
+      },
+    }
+
+    it('shows errors', async () => {
+      const app = feathers()
+      app.use('/test', new MockService())
+      const service = app.service('test')
+      service.hooks({ ...defaultHooks })
+      app.configure(protectServices())
+
+      const negativeResult = app.service('test').create({}, { provider: 'rest' })
+      await expect(negativeResult).rejects.toBeInstanceOf(BadRequest)
+      await expect(negativeResult).rejects.toMatchObject({
+        errors: [{ message: 'id field is malformed' }],
+      })
+    })
+
+    it('does not show errors / throw if one rule returns true', async () => {
+      const app = feathers()
+      app.use('/test', new MockService())
+      const service = app.service('test')
+      const hooks = { ...defaultHooks }
+      hooks.before.all.push(
+        allow({
+          create: () => true,
+        }),
+      )
+      service.hooks(hooks)
+      app.configure(protectServices())
+
+      const negativeResult = app.service('test').create({}, { provider: 'rest' })
+      await expect(negativeResult).resolves.toBe(CREATE_RETURN)
+    })
+
   })
 
 })

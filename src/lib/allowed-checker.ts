@@ -1,6 +1,7 @@
-import { Forbidden } from '@feathersjs/errors'
+import { Forbidden, BadRequest } from '@feathersjs/errors'
 import { Params } from '@feathersjs/feathers'
 import * as _ from 'lodash'
+import { getAllowedInRealm, getErrorsInRealm } from './rules-realm'
 
 export interface AllowedCheckerOptions {
   /**
@@ -32,9 +33,23 @@ export function allowedChecker(options?: Partial<AllowedCheckerOptions>) {
   }
 
   return (params: AllowedCheckerParams) => {
-    if (params.allowed === true) return
     if (!params.provider) return
+    if (getAllowedInRealm(params) === true) return
 
+    throwBadRequestErrorIfErrorsExist(params)
+    throwForbiddenError(params)
+  }
+
+  function throwBadRequestErrorIfErrorsExist(params: AllowedCheckerParams) {
+    const errors = getErrorsInRealm(params)
+    if (!errors || errors.length === 0) return
+
+    // Currently just return the errors from the first throwing rule
+    const firstErrors = errors[0]
+    throw new BadRequest('Validation Error', { errors: firstErrors })
+  }
+
+  function throwForbiddenError(params: AllowedCheckerParams) {
     let errorDetails = ''
     if (params.name) errorDetails += ` service: ${params.name}`
     if (params.method) errorDetails += ` method: ${params.method}`
@@ -59,3 +74,4 @@ export function allowedChecker(options?: Partial<AllowedCheckerOptions>) {
     throw new Forbidden('Request is not allowed for' + errorDetails)
   }
 }
+
