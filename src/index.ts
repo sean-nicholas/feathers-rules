@@ -1,5 +1,5 @@
 export { protectServices, ProtectServicesOptions, defaultOptions } from './protect-services'
-export { allow } from './hooks/allow'
+export { allow, Rules } from './hooks/allow'
 export { checkAllowed } from './hooks/check-allowed'
 export { allowedChecker } from './lib/allowed-checker'
 export { rulesRealm, getAllowedInRealm, setAllowedToTrueInRealm, getErrorsInRealm, addErrorsToRealm } from './lib/rules-realm'
